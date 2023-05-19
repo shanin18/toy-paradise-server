@@ -49,7 +49,7 @@ async function run() {
     });
 
     app.get("/allToys", async (req, res) => {
-      let query = {}
+      let query = {};
       const options = {
         projection: {
           sellerName: 1,
@@ -59,36 +59,29 @@ async function run() {
           availableQuantity: 1,
         },
       };
-      const result = await allToyCollection.find(query, options).limit(20).toArray();
-      console.log(result)
+      const result = await allToyCollection
+        .find(query, options)
+        .limit(20)
+        .toArray();
+      console.log(result);
       res.send(result);
     });
 
     app.get("/myToys", async (req, res) => {
-      console.log(req.query.email)
-      let query = {}
-      if(req.query?.email){
-        query = { sellerEmail: req.query.email}
+      console.log(req.query.email);
+      let query = {};
+      if (req.query?.email) {
+        query = { sellerEmail: req.query.email };
       }
-      const options = {
-        projection: {
-          sellerName: 1,
-          title: 1,
-          subCategory: 1,
-          price: 1,
-          availableQuantity: 1,
-        },
-      };
-      const result = await allToyCollection.find(query, options).toArray();
-      console.log(result)
+      const result = await allToyCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/update/:id", async(req, res) =>{
+    app.get("/update/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const result = await allToyCollection.findOne(query);
-      res.send(result)
+      res.send(result);
     });
 
     app.post("/allToys", async (req, res) => {
@@ -97,13 +90,39 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/allToys/:id", async(req, res) =>{
+    app.put("/allToys/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const body = req.body;
+      const updateDoc = {
+        $set: {
+          img: body.img,
+          title: body.title,
+          price: body.price,
+          ratings: body.ratings,
+          availableQuantity: body.availableQuantity,
+          sellerName: body.sellerName,
+          sellerEmail: body.sellerEmail,
+          subCategory: body.subCategory,
+          description: body.description,
+        },
+      };
+      const result = await allToyCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    app.delete("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await allToyCollection.deleteOne(query);
       res.send(result);
-    })
-   
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
