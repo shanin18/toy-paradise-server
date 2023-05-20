@@ -77,15 +77,33 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myToys", async (req, res) => {
-      console.log(req.query.email);
-      let query = {};
-      if (req.query?.email) {
-        query = { sellerEmail: req.query.email };
-      }
-      const result = await allToyCollection.find(query).toArray();
+    app.get("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await allToyCollection.findOne(query)
       res.send(result);
     });
+
+
+
+    app.get("/myToys", async (req, res) => {
+      console.log(req.query.sort);
+      let query = {};
+      let options = {};
+      if (req.query?.email) {
+        query = { sellerEmail: req.query.email };
+        if(req.query.sort === "increasing"){
+          options = {price: 1 }
+        }
+        else if(req.query.sort === "decreasing"){
+          options = {price: -1 }
+        }
+        
+      }
+      const result = await allToyCollection.find(query).sort(options).toArray();
+      res.send(result);
+    });
+
 
     app.get("/update/:id", async (req, res) => {
       const id = req.params.id;
@@ -118,6 +136,7 @@ async function run() {
           description: body.description,
         },
       };
+
       const result = await allToyCollection.updateOne(
         query,
         updateDoc,
