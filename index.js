@@ -29,6 +29,17 @@ async function run() {
       .collection("toyCategories");
     const allToyCollection = client.db("toyParadise").collection("allToys");
 
+    // Creating index on title field
+    const indexKey = { title: 1 };
+    const result = await allToyCollection.createIndex(indexKey);
+
+    app.get("/searchByToy/:text", async(req, res)=>{
+      const text = req.params.text;
+      const result = await allToyCollection.find({title: { $regex: text, $options: "i" }}).toArray()
+      res.send(result)
+
+    })
+
     app.get("/action_figure/:category", async (req, res) => {
       const category = req.params.category;
       const query = { subCategory: category };
@@ -63,7 +74,6 @@ async function run() {
         .find(query, options)
         .limit(20)
         .toArray();
-      console.log(result);
       res.send(result);
     });
 
